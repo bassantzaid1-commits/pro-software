@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rehlaty Bus Ticket Booking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="#" id="brand">Rehlaty</a>
+  <nav>
+    <button class="link" id="navSearch">Book a trip</button>
+    <button class="link" id="navTimetable">Timetable &amp; fares</button>
+    <button class="link" id="navBookings">My bookings <span id="count" class="badge" hidden>0</span></button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- 1. Search -->
+  <section id="viewSearch" class="view">
+    <div class="hero">
+      <h1>Book your seat<br>on the next bus.</h1>
+      <p>Pick your cities and travel date, then choose your seat from the bus map.</p>
+    </div>
+    <form id="searchForm" class="panel search" novalidate>
+      <label>From
+        <select id="from" required></select>
+      </label>
+      <button type="button" id="swap" class="swap" aria-label="Swap cities"></button>
+      <label>To
+        <select id="to" required></select>
+      </label>
+      <label>Date
+        <input type="date" id="date" required>
+      </label>
+      <button class="btn primary" type="submit">Search trips</button>
+      <p class="error" id="searchError" role="alert"></p>
+    </form>
+
+    <div class="stats">
+      <div><strong id="statCities">12</strong><span>cities</span></div>
+      <div><strong>5</strong><span>daily trips per route</span></div>
+      <div><strong>40</strong><span>seats per bus</span></div>
+      <div><strong>0</strong><span>booking fees</span></div>
+    </div>
+
+    <section class="block">
+      <h2>Popular routes</h2>
+      <p class="sub">Tap a route to see tomorrow's trips.</p>
+      <div id="popular" class="popular"></div>
+    </section>
+  </section>
+
+  <!-- 2. Results -->
+  <section id="viewResults" class="view" hidden>
+    <button class="back" data-back="viewSearch">Back to search</button>
+    <h2 id="resultsTitle"></h2>
+    <div class="filters panel">
+      <label>Bus type
+        <select id="fType">
+          <option value="all">All</option>
+          <option value="standard">Standard</option>
+          <option value="deluxe">Deluxe</option>
+          <option value="vip">VIP</option>
+        </select>
+      </label>
+      <label>Departure time
+        <select id="fPeriod">
+          <option value="all">Any time</option><option value="morning">Morning (before 12:00)</option>
+          <option value="afternoon">Afternoon (12:00 – 17:00)</option><option value="evening">Evening (17:00 – 21:00)</option>
+          <option value="night">Night (after 21:00)</option>
+        </select>
+      </label>
+      <label>Sort by
+        <select id="fSort"><option value="time">Earliest first</option><option value="price">Cheapest first</option></select>
+      </label>
+    </div>
+    <div id="results" class="list"></div>
+  </section>
+
+  <!-- 3. Seat selection -->
+  <section id="viewSeats" class="view" hidden>
+    <button class="back" data-back="viewResults">Back to trips</button>
+    <h2 id="seatsTitle"></h2>
+    <div class="seat-layout">
+      <div class="panel">
+        <div class="bus">
+          <div class="driver">Driver</div>
+          <div id="seatMap" class="seatmap"></div>
+        </div>
+        <ul class="legend">
+          <li><i class="seat"></i>Available</li>
+          <li><i class="seat selected"></i>Selected</li>
+          <li><i class="seat taken"></i>Taken</li>
+        </ul>
+      </div>
+      <form id="bookForm" class="panel" novalidate>
+        <h3>Passenger details</h3>
+        <label>Full name
+          <input type="text" id="pname" autocomplete="name" required>
+        </label>
+        <label>Mobile number
+          <input type="tel" id="pphone" inputmode="numeric" placeholder="01XXXXXXXXX" required>
+        </label>
+        <label>Boarding station
+          <select id="pickup"></select>
+        </label>
+        <label>Drop-off station
+          <select id="dropoff"></select>
+        </label>
+        <label>Payment method
+          <select id="pay">
+            <option value="cash">Pay at boarding</option>
+            <option value="vodafone">Vodafone Cash</option>
+            <option value="card">Bank card</option>
+          </select>
+        </label>
+        <div class="promo-row">
+          <label>Promo code (optional)
+            <input type="text" id="promo" placeholder="Try WELCOME10" autocomplete="off">
+          </label>
+          <button type="button" class="btn" id="applyPromo">Apply</button>
+        </div>
+        <p class="promo-msg" id="promoMsg"></p>
+        <dl class="sum">
+          <dt>Seats</dt><dd id="sumSeats">None selected</dd>
+          <dt>Fare per seat</dt><dd id="sumPrice"></dd>
+          <dt id="discLabel" hidden>Discount</dt><dd id="sumDisc" hidden></dd>
+          <dt class="total">Total</dt><dd class="total" id="sumTotal">EGP 0</dd>
+        </dl>
+        <p class="error" id="bookError" role="alert"></p>
+        <button class="btn primary" type="submit">Confirm booking</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- 4. Ticket -->
+  <section id="viewTicket" class="view" hidden>
+    <h2>Booking confirmed</h2>
+    <div id="ticketBox"></div>
+    <div class="actions">
+      <button class="btn" id="printBtn">Print ticket</button>
+      <button class="btn primary" id="newBtn">Book another trip</button>
+    </div>
+  </section>
+
+  <!-- 5. Timetable and fares -->
+  <section id="viewTimetable" class="view" hidden>
+    <h2>Timetable &amp; fares</h2>
+    <p class="sub">Pick a departure city to see every route, its travel time and the fare for each bus category.</p>
+    <label class="tt-filter">Departing from
+      <select id="ttFrom"></select>
+    </label>
+    <p class="tt-times" id="ttTimes"></p>
+    <div class="tt-wrap">
+      <table class="policy">
+        <thead>
+          <tr>
+            <th>Destination</th>
+            <th>Duration</th>
+            <th>Standard</th>
+            <th>Deluxe</th>
+            <th>VIP</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="ttBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 6. My bookings -->
+  <section id="viewBookings" class="view" hidden>
+    <h2>My bookings</h2>
+    <form id="lookupForm" class="panel lookup" novalidate>
+      <strong>Find a booking</strong>
+      <input type="text" id="lkCode" placeholder="Booking code (BUSXXXXXX)" aria-label="Booking code" required>
+      <input type="tel" id="lkPhone" placeholder="Mobile number" aria-label="Mobile number" required>
+      <button class="btn primary" type="submit">Find</button>
+    </form>
+    <div id="lookupResult"></div>
+    <div id="bookingsList" class="list"></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot-grid">
+    <div><strong>Rehlaty</strong><p>Book your bus ticket from anywhere in a minute.</p></div>
+    <div><strong>Contact us</strong><p>Customer service: 19000<br>support@rehlaty.example</p></div>
+    <div><strong>Opening hours</strong><p>Every day, 6 AM to 12 AM</p></div>
+  </div>
+</footer>
+<script src="js/script.js"></script>
+</body>
+</html>
